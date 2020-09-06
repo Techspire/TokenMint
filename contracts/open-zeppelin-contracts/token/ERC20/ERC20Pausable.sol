@@ -1,30 +1,26 @@
-pragma solidity ^0.4.24;
+pragma solidity ^0.6.0;
 
 import "./ERC20.sol";
-import "../../lifecycle/Pausable.sol";
+import "../../utils/Pausable.sol";
 
 /**
- * @title Pausable token
- * @dev ERC20 modified with pausable transfers.
- **/
-contract ERC20Pausable is ERC20, Pausable {
-    function transfer(address to, uint256 value) public whenNotPaused returns (bool) {
-        return super.transfer(to, value);
-    }
+ * @dev ERC20 token with pausable token transfers, minting and burning.
+ *
+ * Useful for scenarios such as preventing trades until the end of an evaluation
+ * period, or having an emergency switch for freezing all token transfers in the
+ * event of a large bug.
+ */
+abstract contract ERC20Pausable is ERC20, Pausable {
+    /**
+     * @dev See {ERC20-_beforeTokenTransfer}.
+     *
+     * Requirements:
+     *
+     * - the contract must not be paused.
+     */
+    function _beforeTokenTransfer(address from, address to, uint256 amount) internal virtual override {
+        super._beforeTokenTransfer(from, to, amount);
 
-    function transferFrom(address from,address to, uint256 value) public whenNotPaused returns (bool) {
-        return super.transferFrom(from, to, value);
-    }
-
-    function approve(address spender, uint256 value) public whenNotPaused returns (bool) {
-        return super.approve(spender, value);
-    }
-
-    function increaseAllowance(address spender, uint addedValue) public whenNotPaused returns (bool success) {
-        return super.increaseAllowance(spender, addedValue);
-    }
-
-    function decreaseAllowance(address spender, uint subtractedValue) public whenNotPaused returns (bool success) {
-        return super.decreaseAllowance(spender, subtractedValue);
+        require(!paused(), "ERC20Pausable: token transfer while paused");
     }
 }
